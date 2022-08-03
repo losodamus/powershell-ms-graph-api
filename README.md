@@ -1,4 +1,3 @@
 # MSGraphAPI
 
-Use the Microsoft Graph API and output users.
-Use the '@odata.nextLink' property if more users need to be returned.
+Various collection of PowerShell scripts using the Microsoft Graph API. Each of these helped solve a quick business need.
