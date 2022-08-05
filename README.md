@@ -1,4 +1,4 @@
-# MSGraphAPI
+# Microsoft Graph API
 
 PowerShell scripts using the Microsoft Graph API. Each of these helped address an immediate business need.
 
