@@ -1,5 +1,5 @@
 ﻿<#
-    Copy-SPODriveItemTo
+    Copy-SPOFileFromAndTo.ps1
     ------------------------------
 
 
