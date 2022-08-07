@@ -1,5 +1,5 @@
 ﻿<#
-    Get-RecurisveListOfUsers.ps1
+    Get-AzureUserListWithRecurision.ps1
     ------------------------------
 
 
