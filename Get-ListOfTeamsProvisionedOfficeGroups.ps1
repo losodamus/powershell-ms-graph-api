@@ -1,5 +1,5 @@
 ﻿<#
-    Get-TeamsProvisionedOfficeGroups.ps1
+    Get-ListOfTeamsProvisionedOfficeGroups.ps1
     ------------------------------
 
 
