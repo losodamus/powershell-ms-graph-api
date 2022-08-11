@@ -1,10 +1,11 @@
-﻿<#
+<#
     Set-SPOSiteFollowOfNewHires.ps1
     ------------------------------
 
 
-    Query Azure AD group of recent new hires 
-    and follow SPO intranet site on their behalf. 
+    Query and return list of recent new hires.
+    Query and return SharePoint intranet site id.
+    Follow SPO site on behalf of new hires. 
 #>
 cls
 
@@ -119,7 +120,6 @@ try {
                         -APIMethod Get `
                         -APIVersion v1.0 `
                         -APIResource "sites/$($global:TenantName).sharepoint.com:/$($sitePath)/?`$select=id,name,webUrl")) {
-        $site | fl
 
 
         ##  E.g., 8317d5d7-84a4-a404-bb00-1f865ae63203
@@ -128,7 +128,6 @@ try {
                             -APIMethod Get `
                             -APIVersion v1.0 `
                             -APIResource "groups/?`$select=id,displayName,description&`$filter=startswith(displayName,'$($groupName)')").value) {
-            $group | fl
 
 
             ##  E.g., ed348d15-4fff-404a-bfce-26b6e19e9d4b
@@ -137,7 +136,6 @@ try {
                                 -APIMethod Get `
                                 -APIVersion v1.0 `
                                 -APIResource "groups/$($group.id)/members/?`$select=id,displayName").value) {
-                $member | fl
 
 
                 $indexOf += 1
@@ -164,6 +162,7 @@ try {
                 
                     Get-RestAPIBatchResponse `
                         -APIBatch $batchOf
+                    $batchOf = @()
                 }
             }
 
@@ -171,6 +170,7 @@ try {
             if ($indexOf -ne 0) {
                 Get-RestAPIBatchResponse `
                     -APIBatch $batchOf
+                $batchOf = @()
             }
         }
     }
