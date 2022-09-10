@@ -1,5 +1,9 @@
-﻿<#
+<#
     Get-AzureGroupIdByName.ps1
+    ##  --------------------------------------------------
+
+
+    Query an Azure group by name and return the group ID.
 #>
 
 
@@ -7,6 +11,9 @@
 $global:AppGuid = "<app_id>"
 $global:AppSecret = "<app_secret>"
 $global:TenantName = "<tenant_name>"
+
+
+[System.String] $groupGuid = ""
 [System.String] $groupName = "<group_name>"
 
 
@@ -34,7 +41,7 @@ function Get-RestAPIHeader {
 }
 
 
-function Get-RestAPIResonse () {
+function Get-RestAPIResonse {
     param(
         [Parameter(Mandatory)] 
         [ValidateNotNullOrEmpty()] 
@@ -66,59 +73,27 @@ function Get-RestAPIResonse () {
         return $null
     }
 }
-
-
-function Get-RestAPIBatchResponse {
-    param(
-        [Parameter(Mandatory)] 
-        [System.Array] $APIBatch
-    )
-
-
-    try {
-        $jsonBody = @{
-            "requests" = $APIBatch
-        } | ConvertTo-Json -Depth 5
-        $jsonBody | Out-Host
-
-
-        $r = (Invoke-RestMethod `
-            -Uri "https://graph.microsoft.com/v1.0/`$batch" `
-            -Headers (Get-RestAPIHeader) `
-            -Body $jsonBody `
-            -Method POST `
-            -ContentType "application/json")
-        return $r
-    }
-    catch [Exception] {
-        return $null
-    }
-}
-
-
-##  E.g., 8317d5d7-84a4-a404-bb00-1f865ae63203
-##  --------------------------------------------------
-function Get-GroupIdByName {
-    param(
-        [Parameter(Mandatory)] 
-        [System.String] $NameOfGroup
-    )
-
-
-    [System.String] $t = ""
-    foreach($g in (Get-RestAPIResonse `
-                    -APIMethod Get `
-                    -APIVersion v1.0 `
-                    -APIResource "groups/?`$select=id,displayName&`$filter=startswith(displayName,'$($NameOfGroup)')").value) {
-        $t = "$($g.id)"
-    }
-    return $t
-}
 cls
 
 
 try {
-    Get-GroupIdByName -NameOfGroup $groupName
+    ##  E.g., 8317d5d7-84a4-a404-bb00-1f865ae63203
+    ##  --------------------------------------------------
+    foreach($g in (Get-RestAPIResonse `
+                    -APIMethod Get `
+                    -APIVersion v1.0 `
+                    -APIResource "groups/?`$select=id,displayName&`$filter=startswith(displayName,'$($groupName)')").value) {
+        $groupGuid = "$($g.id)"
+    }
+
+
+    ##  Found or NOT Found
+    if ($groupGuid -ne "") {
+        Write-Host -F Green "Group Found: $($groupGuid)."
+    }
+    else {
+        Write-Host -F Red "Group NOT Found!"
+    }
 }
 catch [Exception] {
     Write-Error $_.Exception.Message
