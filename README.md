@@ -4,10 +4,12 @@ PowerShell scripts using the Microsoft Graph API. Each solution helps to address
 
 > FYI, 
 > *Adam the Automator* created a great guide to get started:
+> 
+> [https://adamtheautomator.com/microsoft-graph-api-powershell](https://adamtheautomator.com/microsoft-graph-api-powershell)
+> 
 > ```
-> https://adamtheautomator.com/microsoft-graph-api-powershell/
 > - Register app.
 > - Get app ID.
 > - Get app secret.
-> - Configure permissions.
+> - Configure app permissions.
 > ```
