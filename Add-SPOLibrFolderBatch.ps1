@@ -1,11 +1,12 @@
-﻿<#
-    Add-SPOLibraryBatchOfFolders.ps1
+<#
+    Add-SPOLibrFolderBatch.ps1
     ------------------------------
 
 
-    Batch create a list of folders 
-    in a target SharePoint Online 
-    document library. 
+    - Populate script variables.
+    - Query target SharePoint site GUID.
+    - Query target document library GUID.
+    - Create batch of folders at root of SPO library.
 #>
 cls
 
@@ -54,11 +55,11 @@ function Get-RestAPIHeader {
 }
 
 
-function Get-RestAPIResonse () {
+function Get-RestAPIResonse {
     param(
         [Parameter(Mandatory)] 
         [ValidateNotNullOrEmpty()] 
-        [ValidateSet('Get', 'Post', 'Patch')] 
+        [ValidateSet('Get')] 
         [System.String] $APIMethod,
 
 
@@ -120,18 +121,21 @@ cls
 try {
     ##  E.g., <tenant_name>.sharepoint.com,076bf298-a1b2-49b8-9658-9c9796e3623c,7e80afae-d0f6-abcd-1234-773b9fe11381
     ##  --------------------------------------------------
-    foreach($site in (Get-RestAPIResonse `
+    foreach($s in (Get-RestAPIResonse `
                         -APIMethod Get `
                         -APIVersion v1.0 `
                         -APIResource "sites/$($global:TenantName).sharepoint.com:/$($sitePath)/?`$select=id,name,webUrl")) {
+        Write-Host -F Cyan "Site:`t$($s.id)"
 
 
         ##  E.g., b!mPJrB6couEmWWJyXluNiPK6vgH720IpBh_R404_hE4H0-fEDWHMKQ6oR_pSl_atl
         ##  --------------------------------------------------
-        foreach($libr in (Get-RestAPIResonse `
+        foreach($l in (Get-RestAPIResonse `
                             -APIMethod Get `
                             -APIVersion v1.0 `
-                            -APIResource "sites/$($site.id)/drives/?`$select=id,name,webUrl").value | ? { $_.webUrl -like "*$($librPath)" }) {
+                            -APIResource "sites/$($s.id)/drives/?`$select=id,name,webUrl").value `
+                            | ? { $_.webUrl -like "*$($librPath)" }) {
+            Write-Host -F Magenta "Libr:`t$($l.id)"
 
 
             ##  Enumerate folder array
@@ -140,7 +144,7 @@ try {
 
                 $batchIndex += 1
                 $batchOfFolders += @{
-                    "url" = "/sites/$($site.id)/drives/$($libr.id)/root/children"
+                    "url" = "/sites/$($s.id)/drives/$($l.id)/root/children"
                     "method" = "POST"
                     "id" = "$($batchIndex)"
                     "body" = @{
@@ -161,5 +165,6 @@ try {
     }
 }
 catch [Exception] {
+    Write-Error "`nError Message:"
     Write-Error $_.Exception.Message
 }
