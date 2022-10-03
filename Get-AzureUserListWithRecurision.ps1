@@ -1,17 +1,18 @@
-﻿<#
+<#
     Get-AzureUserListWithRecurision.ps1
     ------------------------------
 
 
-    Loop through and output tenant users using the 
-    Microsoft Graph API and the '@odata.nextLink' parameter. 
+    - Populate script variables.
+    - Query Azure AD users.
+    - Use the '@odata.nextLink' property value for recursion.
 #>
 
 
 ##  Variable(s)
 $global:AppGuid = "<app_id>"
 $global:AppSecret = "<app_secret>"
-$global:TenantName = "<tenant_name>.onmicrosoft.com"
+$global:TenantName = "<tenant_name>"
 
 
 function Get-RequestAPIHeader {
@@ -27,7 +28,7 @@ function Get-RequestAPIHeader {
         ContentType = "application/x-www-form-urlencoded"
         Method = "POST"
         Body = $Body
-        Uri = "https://login.microsoftonline.com/$($global:TenantName)/oauth2/v2.0/token"
+        Uri = "https://login.microsoftonline.com/$($global:TenantName).onmicrosoft.com/oauth2/v2.0/token"
     }
     $Request = Invoke-RestMethod @PostSplat
 
@@ -38,26 +39,30 @@ function Get-RequestAPIHeader {
 }
 
 
-function Get-RecursiveListOfUsers {
+function Get-AzureADListOfUsers {
     param(
-        [System.String] $GraphAPIEndpoint
+        [Parameter(Mandatory)] 
+        [ValidateNotNullOrEmpty()] 
+        [System.String] $GraphAPIRequest
     )
 
 
+    [System.String] $nextLink = ""
     try {
         $GraphReq = Invoke-RestMethod `
-            -Uri $GraphAPIEndpoint `
+            -Uri "$GraphAPIRequest" `
             -Headers (Get-RequestAPIHeader) `
             -Method GET `
             -ContentType "application/json"
 
 
-        $GraphAPIEndpoint = ""
+        ##  Get next batch link
         if ($GraphReq.'@odata.nextLink'.Length -ne 0) {
-            $GraphAPIEndpoint = $GraphReq.'@odata.nextLink'
+            $nextLink = $GraphReq.'@odata.nextLink'
         }
 
 
+        ##  Output users
         $GraphReq.value | % {
             Write-Host -F Green "$($_.displayName)"
         }
@@ -67,18 +72,18 @@ function Get-RecursiveListOfUsers {
     }
 
 
-    ##  Return next batch of users
-    if ($GraphAPIEndpoint -ne "") {
-        Get-RecursiveListOfUsers `
-            -GraphAPIEndpoint "$GraphAPIEndpoint"
+    ##  Return next batch
+    if ($nextLink -ne "") {
+        Get-AzureADListOfUsers `
+            -GraphAPIRequest "$nextLink"
     }
 }
-cls
+Clear-Host
 
 
 try {
-    Get-RecursiveListOfUsers `
-        -GraphAPIEndpoint "https://graph.microsoft.com/v1.0/users/?`$select=displayName&`$orderby=displayName&`$top=100"
+    Get-AzureADListOfUsers `
+        -GraphAPIRequest "https://graph.microsoft.com/v1.0/users/?`$orderby=displayName&`$top=100"
 }
 catch [Exception] {
     Write-Host -F Red $_.Exception.Message
