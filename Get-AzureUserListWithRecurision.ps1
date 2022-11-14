@@ -10,9 +10,9 @@
 
 
 ##  Variable(s)
-$global:AppGuid = "<app_id>"
-$global:AppSecret = "<app_secret>"
-$global:TenantName = "<tenant_name>"
+$global:AppGuid = "<app_id>"          ##  E.g., "468a8e5d-4040-1a3c-5e7g-9a668ebeef07"
+$global:AppSecret = "<app_secret>"    ##  E.g., "b-fj928rjf02hm8r2y398r,2^~448jgergkgj34g"
+$global:TenantName = "<tenant_name>"  ##  E.g., "contoso"
 
 
 function Get-RequestAPIHeader {
