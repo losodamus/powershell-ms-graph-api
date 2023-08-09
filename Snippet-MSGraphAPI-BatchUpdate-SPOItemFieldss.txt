@@ -1,0 +1,34 @@
+##  ----------------------------------------
+##  /sites/{site-id}/lists/{list-id}/items/{item-id}/fields"
+##  ----------------------------------------
+function Void-MSGraphAPI-SPOList-BatchUpdateItems {
+    param(
+        [Parameter(Mandatory)] [System.String] $SiteID,
+        [Parameter(Mandatory)] [System.String] $ListID,
+        [Parameter(Mandatory)] [System.String] $ItemID,
+        [Parameter(Mandatory)] [System.String] $FieldTitle,
+        [Parameter(Mandatory)] [System.String] $FieldMessage,
+        [Parameter(Mandatory)] [System.String] $FieldDepartment
+    )
+
+    ##  Append to global batch variable
+    $Global:batchOf += @{
+        "id" = "$($Global:batchOf.Count + 1)"
+        "method" = "PATCH"
+        "url" = "/sites/$($SiteID)/lists/$($ListID)/items/$($ItemID)/fields"
+        "headers" = @{
+            "Content-Type" = "application/json"
+        }
+        "body" = @{
+            "Title" = $FieldTitle
+            "Message" = $FieldMessage
+            "Department" = $FieldDepartment
+        }
+    }
+
+    ##  Submit batch if max number reached
+    if ($Global:batchOf.Count -eq 20) {
+        Get-MSGraphAPI-BatchResponse -BatchRequests $Global:batchOf
+        $Global:batchOf = @()
+    }
+}
